@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Admin — Top 10 Movies</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-grid">
+    <div>
+      <h1 class="logo">Admin — Top 10 Movies</h1>
+      <p class="tag">Manage list • Demo auth (replace with real auth for production)</p>
+    </div>
+    <div class="header-actions">
+      <a class="btn" href="index.html">View Public</a>
+      <button id="darkToggleAdmin">Toggle Dark</button>
+    </div>
+  </div>
+</header>
+
+<main class="container admin-container">
+  <section id="loginSection" class="card admin-card">
+    <h2>Admin Login</h2>
+    <div class="form-row">
+      <input id="loginUser" placeholder="username" />
+      <input id="loginPass" placeholder="password" type="password" />
+    </div>
+    <div class="form-row">
+      <button id="loginBtn">Sign In</button>
+      <div id="loginError" class="error"></div>
+    </div>
+    <p class="note">Demo credentials: <code>admin</code> / <code>Password123</code></p>
+  </section>
+
+  <section id="adminPanel" class="card admin-card hidden">
+    <div class="admin-grid">
+      <div>
+        <h2>Upload / Add Movie</h2>
+
+        <label>Title</label>
+        <input id="movieTitle" placeholder="Movie title" />
+
+        <label>Year</label>
+        <input id="movieYear" type="number" placeholder="e.g. 1994" />
+
+        <label>Rating</label>
+        <input id="movieRating" type="number" step="0.1" placeholder="0-10" />
+
+        <label>Poster (file)</label>
+        <input id="moviePoster" type="file" accept="image/*" />
+
+        <label>Description</label>
+        <textarea id="movieDesc" rows="3"></textarea>
+
+        <label>Rank (1-10)</label>
+        <input id="movieRank" type="number" min="1" max="10" />
+
+        <div class="form-row">
+          <button id="addMovieBtn">Add / Upload</button>
+          <button id="logoutBtn" class="danger">Logout</button>
+        </div>
+        <div id="adminMsg" class="muted"></div>
+      </div>
+
+      <div>
+        <h2>Manage Movies</h2>
+        <div id="adminMovies" class="admin-list"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="admin.js"></script>
+</body>
+</html>

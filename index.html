@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Top 10 Movies</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-grid">
+    <div>
+      <h1 class="logo">Top 10 Movies</h1>
+      <p class="tag">Curated list — public view</p>
+    </div>
+    <div class="header-actions">
+      <input id="searchBox" type="search" placeholder="Search title, year, rating…" aria-label="Search movies" />
+      <select id="filterYear" aria-label="Filter by year">
+        <option value="">All years</option>
+      </select>
+      <button id="darkToggle" type="button">Toggle Dark</button>
+      <a class="btn" href="admin.html">Admin</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <section id="statsRow" class="stats-row hidden">
+    <div id="totalMovies">0 movies</div>
+    <div id="backendStatus">Backend: <span id="backendOk">Checking…</span></div>
+  </section>
+
+  <!-- Movies grid -->
+  <section id="moviesList" class="movies-grid">
+    <!-- Preloaded demo movies -->
+    <article class="movie-card" data-year="1994">
+      <img src="posters/shawshank.jpg" alt="The Shawshank Redemption poster" />
+      <h2>The Shawshank Redemption</h2>
+      <p>Year: 1994 | Rating: 9.3</p>
+    </article>
+
+    <article class="movie-card" data-year="1972">
+      <img src="posters/godfather.jpg" alt="The Godfather poster" />
+      <h2>The Godfather</h2>
+      <p>Year: 1972 | Rating: 9.2</p>
+    </article>
+
+    <!-- More preloaded movies… -->
+  </section>
+
+  <section id="noResults" class="empty hidden">No movies found.</section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    Demo site — poster upload and admin actions require login on admin page.
+  </div>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>
