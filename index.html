@@ -1,62 +1,448 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Top 10 Movies</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="description" content="Interactive website showcasing the Top 10 Movies with details: title, year, director, cast, genre, ratings, and descriptions." />
+  <style>
+    :root{
+      --bg: #0b0f14;
+      --panel: #111827;
+      --card: #0f172a;
+      --muted: #94a3b8;
+      --text: #e5e7eb;
+      --accent: #22d3ee;
+      --accent-2: #a78bfa;
+      --ring: rgba(34,211,238,.45);
+      --shadow: 0 10px 25px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--text); background: radial-gradient(1200px 800px at 15% -10%, #1e293b 0%, var(--bg) 60%),
+                        radial-gradient(1000px 700px at 110% -10%, #0e7490 0%, transparent 60%),
+                        radial-gradient(600px 400px at -10% 110%, #4c1d95 0%, transparent 60%), var(--bg);
+    }
+    header{
+      position: sticky; top:0; z-index:10;
+      backdrop-filter: saturate(140%) blur(10px);
+      background: linear-gradient(180deg, rgba(15,23,42,.8), rgba(15,23,42,.35));
+      border-bottom: 1px solid rgba(148,163,184,.15);
+    }
+    .container{max-width:1200px; margin:0 auto; padding: 16px 20px}
+    .hero{display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap}
+    .brand{display:flex; gap:12px; align-items:center}
+    .logo{width:40px; height:40px; border-radius:12px; background: conic-gradient(from 180deg, var(--accent), var(--accent-2)); box-shadow: var(--shadow)}
+    h1{font-size: clamp(20px, 2.8vw, 32px); margin:0; letter-spacing:.3px}
+
+    .controls{display:flex; gap:10px; flex-wrap:wrap}
+    .input, select{
+      background: #0b1220; color: var(--text);
+      border:1px solid rgba(148,163,184,.25);
+      padding:12px 14px; border-radius:12px; outline:none; 
+      transition:.2s border-color, .2s box-shadow;
+    }
+    .input:focus, select:focus{border-color:var(--accent); box-shadow:0 0 0 4px var(--ring)}
+    .btn{cursor:pointer; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color:#0b0f14; border:0; padding:12px 14px; border-radius:12px; font-weight:700; box-shadow: var(--shadow)}
+
+    main{padding: 24px 20px}
+    .grid{display:grid; grid-template-columns: repeat(12, 1fr); gap:16px; max-width:1200px; margin:0 auto}
+    .card{
+      grid-column: span 12; 
+      background: linear-gradient(180deg, rgba(148,163,184,.06), rgba(148,163,184,.02));
+      border:1px solid rgba(148,163,184,.18); border-radius: var(--radius);
+      overflow:hidden; display:flex; flex-direction:row; gap:0; box-shadow: var(--shadow);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .card:hover{transform: translateY(-3px); border-color: rgba(34,211,238,.6)}
+    @media (min-width:640px){.card{grid-column: span 6}}
+    @media (min-width:1024px){.card{grid-column: span 4}}
+    .poster{width:34%; min-height:220px; background-size:cover; background-position:center; position:relative}
+    .poster::after{content:""; position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,.0), rgba(0,0,0,.35))}
+    .content{flex:1; padding:14px 14px 12px 14px; display:flex; flex-direction:column; gap:8px}
+    .title{font-size:18px; font-weight:800; line-height:1.35}
+    .meta{font-size:13px; color: var(--muted)}
+    .tags{display:flex; gap:6px; flex-wrap:wrap}
+    .tag{font-size:11px; color:#0b0f14; background:linear-gradient(135deg, rgba(34,211,238,.85), rgba(167,139,250,.85)); padding:6px 8px; border-radius:999px; font-weight:700}
+    .desc{font-size:14px; color:#cbd5e1}
+    .row{display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap}
+    .rating{display:flex; align-items:center; gap:6px}
+    .stars{display:inline-flex; gap:2px}
+    .star{width:16px; height:16px; display:inline-block; mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>') no-repeat center / contain; background:#22d3ee}
+    .fav{cursor:pointer; border:1px solid rgba(148,163,184,.25); background:#0b1220; color:var(--text); padding:8px 10px; border-radius:10px}
+    .fav.active{border-color:#fbbf24; box-shadow:0 0 0 3px rgba(251,191,36,.25); background:linear-gradient(180deg, #f59e0b, #fbbf24); color:#0b0f14; font-weight:800}
+
+    /* Modal */
+    dialog{border:1px solid rgba(148,163,184,.25); border-radius:20px; width:min(760px, 92vw); background:#0b1220; color:var(--text); box-shadow: var(--shadow)}
+    dialog::backdrop{background: rgba(2,6,23,.65)}
+    .modal-head{display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-bottom:1px solid rgba(148,163,184,.2)}
+    .modal-body{display:grid; grid-template-columns: 1fr; gap:16px; padding:14px}
+    @media(min-width:720px){.modal-body{grid-template-columns: 1fr 1.5fr}}
+    .modal-poster{border-radius:14px; min-height:260px; background-size:cover; background-position:center}
+    .close{cursor:pointer; border:0; background:#111827; color:var(--text); padding:8px 10px; border-radius:10px}
+
+    /* Footer */
+    footer{border-top:1px solid rgba(148,163,184,.15); margin-top:24px}
+    .small{color:var(--muted); font-size:13px}
+
+    /* Utility */
+    .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
+  </style>
 </head>
 <body>
-<header class="site-header">
-  <div class="container header-grid">
-    <div>
-      <h1 class="logo">Top 10 Movies</h1>
-      <p class="tag">Curated list — public view</p>
+  <header>
+    <div class="container hero" role="banner">
+      <!-- Added Back button at the top -->
+      <button class="btn" type="button" onclick="window.history.back()">← Back</button>
+
+      <div class="brand" aria-label="Site identity">
+        <div class="logo" aria-hidden="true"></div>
+        <h1>Top 10 Movies</h1>
+      </div>
+      <form id="controls" class="controls" role="search" aria-label="Filter movies" onsubmit="event.preventDefault()">
+        <label class="sr-only" for="q">Search</label>
+        <input id="q" class="input" type="search" placeholder="Search title, director, cast…" autocomplete="off" />
+        <label class="sr-only" for="genre">Genre</label>
+        <select id="genre" title="Filter by genre">
+          <option value="">All genres</option>
+        </select>
+        <label class="sr-only" for="sort">Sort</label>
+        <select id="sort" title="Sort results">
+          <option value="rank">Sort: Editor Rank</option>
+          <option value="rating">Sort: Rating</option>
+          <option value="year">Sort: Year</option>
+          <option value="title">Sort: Title (A–Z)</option>
+        </select>
+        <button class="btn" id="reset" type="button">Reset</button>
+      </form>
     </div>
-    <div class="header-actions">
-      <input id="searchBox" type="search" placeholder="Search title, year, rating…" aria-label="Search movies" />
-      <select id="filterYear" aria-label="Filter by year">
-        <option value="">All years</option>
-      </select>
-      <button id="darkToggle" type="button">Toggle Dark</button>
-      <a class="btn" href="admin.html">Admin</a>
+  </header>
+
+  <main>
+    <section aria-live="polite" class="grid" id="grid"></section>
+  </main>
+
+  <footer>
+    <div class="container small">
+      <p><strong>Purpose:</strong> A demo site built with semantic HTML, modern CSS, and vanilla JavaScript to showcase the Top 10 Movies in a clear, accessible, and responsive layout.</p>
     </div>
-  </div>
-</header>
+  </footer>
 
-<main class="container">
-  <section id="statsRow" class="stats-row hidden">
-    <div id="totalMovies">0 movies</div>
-    <div id="backendStatus">Backend: <span id="backendOk">Checking…</span></div>
-  </section>
+  <!-- Detail Modal -->
+  <dialog id="modal" aria-labelledby="modal-title">
+    <div class="modal-head">
+      <h2 id="modal-title" style="margin:0">Movie details</h2>
+      <button class="close" onclick="closeModal()">Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-poster" id="modal-poster" role="img" aria-label="Movie poster"></div>
+      <div>
+        <div id="modal-chips" class="tags" style="margin-bottom:8px"></div>
+        <p id="modal-meta" class="meta" style="margin:6px 0"></p>
+        <p id="modal-desc" class="desc" style="margin:10px 0 14px"></p>
+        <p class="meta"><strong>Cast:</strong> <span id="modal-cast"></span></p>
+        <p class="meta"><strong>Director:</strong> <span id="modal-director"></span></p>
+        <p class="meta"><strong>Rating:</strong> <span id="modal-rating"></span>/10</p>
+      </div>
+    </div>
+  </dialog>
 
-  <!-- Movies grid -->
-  <section id="moviesList" class="movies-grid">
-    <!-- Preloaded demo movies -->
-    <article class="movie-card" data-year="1994">
-      <img src="posters/shawshank.jpg" alt="The Shawshank Redemption poster" />
-      <h2>The Shawshank Redemption</h2>
-      <p>Year: 1994 | Rating: 9.3</p>
-    </article>
+  <script>
+  // ------------------------------
+  // Data: Top 10 Movies (example set)
+  // ------------------------------
+  const MOVIES = [
+    {
+      rank: 1,
+      title: "The Godfather",
+      year: 1972,
+      director: "Francis Ford Coppola",
+      cast: ["Marlon Brando","Al Pacino","James Caan"],
+      genres: ["Crime","Drama"],
+      rating: 9.2,
+      description: "An aging patriarch of an organized crime dynasty transfers control to his reluctant son, reshaping family and power in America.",
+      poster: gradientPoster("The Godfather", "#0f172a", "#f59e0b")
+    },
+    {
+      rank: 2,
+      title: "The Dark Knight",
+      year: 2008,
+      director: "Christopher Nolan",
+      cast: ["Christian Bale","Heath Ledger","Aaron Eckhart"],
+      genres: ["Action","Crime","Drama"],
+      rating: 9.0,
+      description: "Batman faces the Joker, a criminal mastermind who plunges Gotham into chaos, testing the limits of justice.",
+      poster: gradientPoster("The Dark Knight", "#0b1220", "#22d3ee")
+    },
+    {
+      rank: 3,
+      title: "Parasite",
+      year: 2019,
+      director: "Bong Joon-ho",
+      cast: ["Song Kang-ho","Cho Yeo-jeong","Choi Woo-shik"],
+      genres: ["Thriller","Drama"],
+      rating: 8.6,
+      description: "A poor family infiltrates a wealthy household, unraveling class tensions through cunning and catastrophe.",
+      poster: gradientPoster("Parasite", "#065f46", "#a7f3d0")
+    },
+    {
+      rank: 4,
+      title: "Schindler's List",
+      year: 1993,
+      director: "Steven Spielberg",
+      cast: ["Liam Neeson","Ralph Fiennes","Ben Kingsley"],
+      genres: ["Biography","Drama","History"],
+      rating: 9.0,
+      description: "Oskar Schindler risks everything to save more than a thousand Jewish refugees during the Holocaust.",
+      poster: gradientPoster("Schindler's List", "#1f2937", "#e5e7eb")
+    },
+    {
+      rank: 5,
+      title: "Spirited Away",
+      year: 2001,
+      director: "Hayao Miyazaki",
+      cast: ["Rumi Hiiragi","Miyu Irino","Mari Natsuki"],
+      genres: ["Animation","Fantasy","Adventure"],
+      rating: 8.6,
+      description: "A young girl enters a spirit world to save her parents, discovering courage and friendship along the way.",
+      poster: gradientPoster("Spirited Away", "#0ea5e9", "#7c3aed")
+    },
+    {
+      rank: 6,
+      title: "Pulp Fiction",
+      year: 1994,
+      director: "Quentin Tarantino",
+      cast: ["John Travolta","Samuel L. Jackson","Uma Thurman"],
+      genres: ["Crime","Drama"],
+      rating: 8.9,
+      description: "Intersecting stories of crime and redemption unfold with dark humor and pop-culture bite.",
+      poster: gradientPoster("Pulp Fiction", "#7c2d12", "#f97316")
+    },
+    {
+      rank: 7,
+      title: "The Shawshank Redemption",
+      year: 1994,
+      director: "Frank Darabont",
+      cast: ["Tim Robbins","Morgan Freeman"],
+      genres: ["Drama"],
+      rating: 9.3,
+      description: "Two imprisoned men forge an enduring friendship and find hope against all odds.",
+      poster: gradientPoster("Shawshank Redemption", "#1e293b", "#22d3ee")
+    },
+    {
+      rank: 8,
+      title: "Inception",
+      year: 2010,
+      director: "Christopher Nolan",
+      cast: ["Leonardo DiCaprio","Joseph Gordon-Levitt","Elliot Page"],
+      genres: ["Sci-Fi","Action","Thriller"],
+      rating: 8.8,
+      description: "A thief who enters dreams must pull off an impossible inception to earn his redemption.",
+      poster: gradientPoster("Inception", "#0f172a", "#38bdf8")
+    },
+    {
+      rank: 9,
+      title: "The Lord of the Rings: The Return of the King",
+      year: 2003,
+      director: "Peter Jackson",
+      cast: ["Elijah Wood","Viggo Mortensen","Ian McKellen"],
+      genres: ["Fantasy","Adventure"],
+      rating: 9.0,
+      description: "The final battle for Middle-earth unfolds as the One Ring nears its fate.",
+      poster: gradientPoster("Return of the King", "#14532d", "#22c55e")
+    },
+    {
+      rank: 10,
+      title: "City of God",
+      year: 2002,
+      director: "Fernando Meirelles, Kátia Lund",
+      cast: ["Alexandre Rodrigues","Leandro Firmino"],
+      genres: ["Crime","Drama"],
+      rating: 8.6,
+      description: "In Rio's favelas, childhood friendships diverge into paths of violence and photography.",
+      poster: gradientPoster("City of God", "#1f2937", "#ef4444")
+    }
+  ];
 
-    <article class="movie-card" data-year="1972">
-      <img src="posters/godfather.jpg" alt="The Godfather poster" />
-      <h2>The Godfather</h2>
-      <p>Year: 1972 | Rating: 9.2</p>
-    </article>
+  // Create a crisp, zero-dependency SVG poster as a data-URI with the title overlay
+  function gradientPoster(text, from = "#0b1220", to = "#22d3ee"){ 
+    const safe = encodeURIComponent(text);
+    const svg = `<?xml version='1.0' encoding='UTF-8'?>
+      <svg xmlns='http://www.w3.org/2000/svg' width='800' height='1200'>
+        <defs>
+          <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+            <stop offset='0%' stop-color='${from}'/>
+            <stop offset='100%' stop-color='${to}'/>
+          </linearGradient>
+        </defs>
+        <rect width='100%' height='100%' fill='url(#g)'/>
+        <text x='50%' y='88%' font-family='system-ui, -apple-system, Segoe UI, Roboto' font-size='48' text-anchor='middle' fill='rgba(255,255,255,.9)'>${safe}</text>
+      </svg>`;
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+  }
 
-    <!-- More preloaded movies… -->
-  </section>
+  // ------------------------------
+  // App State & Elements
+  // ------------------------------
+  const grid = document.getElementById('grid');
+  const q = document.getElementById('q');
+  const selGenre = document.getElementById('genre');
+  const selSort = document.getElementById('sort');
+  const resetBtn = document.getElementById('reset');
+  const modal = document.getElementById('modal');
 
-  <section id="noResults" class="empty hidden">No movies found.</section>
-</main>
+  const FAVORITES_KEY = 'top10movies:favorites';
+  let favorites = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
 
-<footer class="site-footer">
-  <div class="container">
-    Demo site — poster upload and admin actions require login on admin page.
-  </div>
-</footer>
+  // Build genre options
+  const allGenres = Array.from(new Set(MOVIES.flatMap(m => m.genres))).sort();
+  for(const g of allGenres){
+    const opt = document.createElement('option');
+    opt.value = g; opt.textContent = g; selGenre.appendChild(opt);
+  }
 
-<script src="main.js"></script>
+  function render(){
+    const term = q.value.trim().toLowerCase();
+    const g = selGenre.value;
+    const sortBy = selSort.value;
+
+    let list = MOVIES.filter(m => {
+      const inText = (m.title + ' ' + m.director + ' ' + m.cast.join(' ')).toLowerCase();
+      const matchesText = term ? inText.includes(term) : true;
+      const matchesGenre = g ? m.genres.includes(g) : true;
+      return matchesText && matchesGenre;
+    });
+
+    list.sort((a,b)=>{
+      if(sortBy === 'rating') return b.rating - a.rating;
+      if(sortBy === 'year') return b.year - a.year;
+      if(sortBy === 'title') return a.title.localeCompare(b.title);
+      return a.rank - b.rank; // default rank
+    });
+
+    grid.innerHTML = '';
+    if(!list.length){
+      const empty = document.createElement('p');
+      empty.textContent = 'No movies match your filters.';
+      empty.className = 'small';
+      grid.appendChild(empty);
+      return;
+    }
+
+    for(const m of list){
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.setAttribute('tabindex','0');
+      card.setAttribute('aria-label', `${m.title} (${m.year})`);
+
+      const poster = document.createElement('div');
+      poster.className = 'poster';
+      poster.style.backgroundImage = `url(${m.poster})`;
+      poster.role = 'img';
+
+      const content = document.createElement('div');
+      content.className = 'content';
+
+      const title = document.createElement('div');
+      title.className = 'title';
+      title.textContent = `${m.rank}. ${m.title}`;
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = `${m.year} • ${m.director}`;
+
+      const tags = document.createElement('div');
+      tags.className = 'tags';
+      for(const g of m.genres){
+        const t = document.createElement('span');
+        t.className = 'tag'; t.textContent = g; tags.appendChild(t);
+      }
+
+      const desc = document.createElement('p');
+      desc.className = 'desc';
+      desc.textContent = m.description;
+
+      const row = document.createElement('div');
+      row.className = 'row';
+
+      const rating = document.createElement('div');
+      rating.className = 'rating';
+      const stars = document.createElement('span');
+      stars.className = 'stars';
+      const filled = Math.round(m.rating/2); // 5-star scale
+      for(let i=0;i<5;i++){
+        const s = document.createElement('i'); s.className='star';
+        s.style.opacity = i < filled ? 1 : .2; stars.appendChild(s);
+      }
+      const rtext = document.createElement('span'); rtext.className='meta'; rtext.textContent = `${m.rating.toFixed(1)}/10`;
+      rating.append(stars, rtext);
+
+      const fav = document.createElement('button');
+      fav.className = 'fav' + (favorites.has(m.title) ? ' active' : '');
+      fav.innerHTML = favorites.has(m.title) ? '★ Favorited' : '☆ Favorite';
+      fav.setAttribute('aria-pressed', favorites.has(m.title));
+      fav.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if(favorites.has(m.title)) favorites.delete(m.title); else favorites.add(m.title);
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(Array.from(favorites)));
+        render();
+      });
+
+      row.append(rating, fav);
+      content.append(title, meta, tags, desc, row);
+
+      card.append(poster, content);
+
+      card.addEventListener('click', ()=> openModal(m));
+      card.addEventListener('keyup', (ev)=>{ if(ev.key==='Enter') openModal(m); });
+
+      grid.appendChild(card);
+    }
+  }
+
+  function openModal(m){
+    document.getElementById('modal-title').textContent = m.title;
+    const chips = document.getElementById('modal-chips'); chips.innerHTML='';
+    for(const g of m.genres){ const c = document.createElement('span'); c.className='tag'; c.textContent=g; chips.appendChild(c); }
+    document.getElementById('modal-meta').textContent = `${m.year} • Rank #${m.rank}`;
+    document.getElementById('modal-desc').textContent = m.description;
+    document.getElementById('modal-cast').textContent = m.cast.join(', ');
+    document.getElementById('modal-director').textContent = m.director;
+    document.getElementById('modal-rating').textContent = m.rating.toFixed(1);
+    const poster = document.getElementById('modal-poster');
+    poster.style.backgroundImage = `url(${m.poster})`;
+    modal.showModal();
+  }
+  function closeModal(){ modal.close(); }
+  window.closeModal = closeModal;
+
+  // Wire up controls
+  q.addEventListener('input', render);
+  selGenre.addEventListener('change', render);
+  selSort.addEventListener('change', render);
+  resetBtn.addEventListener('click', ()=>{ q.value=''; selGenre.value=''; selSort.value='rank'; render(); q.focus(); });
+
+  // Init
+  render();
+  </script>
+
+  <!--
+  ================================
+  HOW TO SPLIT INTO THREE FILES
+  ================================
+  1) index.html → keep the HTML markup and link the CSS/JS like:
+     <link rel="stylesheet" href="styles.css">
+     <script src="app.js" defer></script>
+
+  2) styles.css → move everything inside the <style>…</style> block.
+
+  3) app.js → move everything inside the <script>…</script> block.
+
+  This single-file version is provided for easy preview.
+  -->
 </body>
 </html>
